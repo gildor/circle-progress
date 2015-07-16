@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="CircleProgressView">
+        <attr name="progressColor" format="color" />
+        <attr name="donutRadius" format="dimension" />
+        <attr name="showRestProgress" format="boolean" />
+    </declare-styleable>
+</resources>
