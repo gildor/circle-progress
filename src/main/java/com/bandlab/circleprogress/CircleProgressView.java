@@ -80,7 +80,7 @@ public class CircleProgressView extends View {
         circleProgress.stop();
         isInfiniteProgress = false;
         this.progress = progress;
-        invalidate();
+        postInvalidateOnAnimation();
     }
 
 
@@ -88,7 +88,7 @@ public class CircleProgressView extends View {
         circleProgress.start();
         isInfiniteProgress = true;
         progress = 0;
-        invalidate();
+        postInvalidateOnAnimation();
     }
 
     public void clearProgress() {
