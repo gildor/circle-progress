@@ -83,6 +83,9 @@ public class CircleProgressView extends View {
         postInvalidateOnAnimation();
     }
 
+    public int getProgress() {
+        return progress;
+    }
 
     public void showInfiniteProgress() {
         circleProgress.start();
