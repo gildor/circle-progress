@@ -96,5 +96,7 @@ public class CircleProgressView extends View {
 
     public void clearProgress() {
         setProgress(0);
+        isInfiniteProgress = false;
+        postInvalidateOnAnimation();
     }
 }
