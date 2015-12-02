@@ -1,11 +1,16 @@
 apply plugin: 'com.android.library'
 
+project.ext.publishingGroupId = 'com.bandlab.circleprogress'
+project.ext.publishingVersion = '1.0.0'
+apply from: '../artifactory.gradle'
+
 android {
     compileSdkVersion Integer.parseInt(rootProject.ANDROID_SDK_VERSION)
     buildToolsVersion rootProject.ANDROID_BUILD_TOOLS_VERSION
 
     defaultConfig {
         minSdkVersion Integer.parseInt(rootProject.MIN_ANDROID_SDK_VERSION)
+        versionName project.ext.publishingVersion
     }
 
     compileOptions {
