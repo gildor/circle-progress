@@ -40,11 +40,20 @@ public class CircleProgressView extends View {
     }
 
     private void initStylesFromAttrs(AttributeSet attrs) {
-        TypedArray attributes = getContext().obtainStyledAttributes(attrs, R.styleable.CircleProgressView);
-        final int defaultDonutRadius = Math.round(DEFAULT_DONUT_RADIUS * getResources().getDisplayMetrics().density);
-        int donutRadius = attributes.getDimensionPixelSize(R.styleable.CircleProgressView_donutRadius, defaultDonutRadius);
-        int progressColor = attributes.getColor(R.styleable.CircleProgressView_progressColor, Color.RED);
-        boolean showRestProgress = attributes.getBoolean(R.styleable.CircleProgressView_showRestProgress, false);
+        TypedArray attributes =
+                getContext().obtainStyledAttributes(attrs, R.styleable.CircleProgressView);
+
+        final int defaultDonutRadius =
+                Math.round(DEFAULT_DONUT_RADIUS * getResources().getDisplayMetrics().density);
+
+        int donutRadius =
+                attributes.getDimensionPixelSize(R.styleable.CircleProgressView_donutRadius, defaultDonutRadius);
+
+        int progressColor =
+                attributes.getColor(R.styleable.CircleProgressView_progressColor, Color.RED);
+
+        boolean showRestProgress =
+                attributes.getBoolean(R.styleable.CircleProgressView_showRestProgress, false);
 
         circleProgress.setDonutParams(donutRadius, progressColor);
         circleProgress.setShowRestProgress(showRestProgress);

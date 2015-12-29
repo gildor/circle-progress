@@ -1,6 +1,5 @@
 package com.bandlab.circleprogress;
 
-
 import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.graphics.Canvas;
@@ -11,50 +10,50 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.graphics.drawable.Animatable;
+import android.support.annotation.NonNull;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
 
-/**
- * Created by vorobievilya on 17/03/15.
- */
 public class CircleProgress implements Animatable {
-    public static final float UNIT_ANGLE = 360f / 100f;
+    public static final int FULL_ROTATION_ANGLE = 360;
+    public static final float UNIT_ANGLE = FULL_ROTATION_ANGLE / 100f;
     public static final Interpolator END_INTERPOLATOR = new LinearInterpolator();
     private static final Interpolator DEFAULT_ROTATION_INTERPOLATOR = new LinearInterpolator();
     private static final Interpolator DEFAULT_SWEEP_INTERPOLATOR = new DecelerateInterpolator();
     private static final int ROTATION_ANIMATOR_DURATION = 2000;
     private static final int SWEEP_ANIMATOR_DURATION = 600;
     private static final int END_ANIMATOR_DURATION = 200;
-    private final static float SWEEP_SPEED = 1;
-    private final static float ROTATION_SPEED = 1;
+    private static final float SWEEP_SPEED = 1;
+    private static final float ROTATION_SPEED = 1;
+    public static final int QUART_OF_ROTATION_ANGLE = 90;
     private final Paint currentProgressPaint;
-    private Paint restProgress;
+    private final Paint restProgress;
     private int donutRadius;
-    private float сurrentRotationAngle;
-    private float сurrentRotationAngleOffset;
-    private float сurrentSweepAngle;
-    private boolean mRunning;
+    private float currentRotationAngle;
+    private float currentRotationAngleOffset;
+    private float currentSweepAngle;
+    private boolean running;
     private boolean modeAppearing;
-    private float сurrentEndRatio;
-    private ValueAnimator mSweepAppearingAnimator;
-    private ValueAnimator mSweepDisappearingAnimator;
-    private ValueAnimator mRotationAnimator;
-    private ValueAnimator mEndAnimator;
-    private Interpolator mAngleInterpolator;
-    private Interpolator mSweepInterpolator;
-    private int mMinSweepAngle = 20;
-    private int mMaxSweepAngle = 300;
-    private boolean mFirstSweepAnimation;
+    private float currentEndRatio;
+    private ValueAnimator sweepAppearingAnimator;
+    private ValueAnimator sweepDisappearingAnimator;
+    private ValueAnimator rotationAnimator;
+    private ValueAnimator endAnimator;
+    private final Interpolator angleInterpolator;
+    private final Interpolator sweepInterpolator;
+    private static final int MIN_SWEEP_ANGLE = 20;
+    private static final int MAX_SWEEP_ANGLE = 300;
+    private boolean firstSweepAnimation;
     private OnInvalidateListener listener;
-    private RectF oval;
+    private final RectF oval;
     private Paint donutPaint;
     private boolean isShowRestProgress = true;
 
     public CircleProgress() {
 
-        mSweepInterpolator = DEFAULT_SWEEP_INTERPOLATOR;
-        mAngleInterpolator = DEFAULT_ROTATION_INTERPOLATOR;
+        sweepInterpolator = DEFAULT_SWEEP_INTERPOLATOR;
+        angleInterpolator = DEFAULT_ROTATION_INTERPOLATOR;
 
         currentProgressPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         currentProgressPaint.setColor(Color.RED);
@@ -83,15 +82,15 @@ public class CircleProgress implements Animatable {
     }
 
     public void drawInfiniteProgress(Canvas canvas, Point point, int radius) {
-        float startAngle = сurrentRotationAngle - сurrentRotationAngleOffset;
-        float sweepAngle = сurrentSweepAngle;
+        float startAngle = currentRotationAngle - currentRotationAngleOffset;
+        float sweepAngle = currentSweepAngle;
         if (!modeAppearing) {
-            startAngle = startAngle + (360 - sweepAngle);
+            startAngle = startAngle + (FULL_ROTATION_ANGLE - sweepAngle);
         }
-        startAngle %= 360;
-        if (сurrentEndRatio < 1f) {
-            float newSweepAngle = sweepAngle * сurrentEndRatio;
-            startAngle = (startAngle + (sweepAngle - newSweepAngle)) % 360;
+        startAngle %= FULL_ROTATION_ANGLE;
+        if (currentEndRatio < 1f) {
+            float newSweepAngle = sweepAngle * currentEndRatio;
+            startAngle = (startAngle + (sweepAngle - newSweepAngle)) % FULL_ROTATION_ANGLE;
             sweepAngle = newSweepAngle;
         }
         drawArc(canvas, point, radius, startAngle, sweepAngle);
@@ -118,37 +117,66 @@ public class CircleProgress implements Animatable {
     }
 
     private void setupAnimations() {
-        mRotationAnimator = ValueAnimator.ofFloat(0f, 360f);
-        mRotationAnimator.setInterpolator(mAngleInterpolator);
-        mRotationAnimator.setDuration((long) (ROTATION_ANIMATOR_DURATION / ROTATION_SPEED));
-        mRotationAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        rotationAnimator = ValueAnimator.ofFloat(0f, FULL_ROTATION_ANGLE);
+        rotationAnimator.setInterpolator(angleInterpolator);
+        rotationAnimator.setDuration((long) (ROTATION_ANIMATOR_DURATION / ROTATION_SPEED));
+        rotationAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                float angle = getAnimatedFraction(animation) * 360f;
+                float angle = getAnimatedFraction(animation) * FULL_ROTATION_ANGLE;
                 setCurrentRotationAngle(angle);
             }
         });
-        mRotationAnimator.setRepeatCount(ValueAnimator.INFINITE);
-        mRotationAnimator.setRepeatMode(ValueAnimator.RESTART);
+        rotationAnimator.setRepeatCount(ValueAnimator.INFINITE);
+        rotationAnimator.setRepeatMode(ValueAnimator.RESTART);
 
-        mSweepAppearingAnimator = ValueAnimator.ofFloat(mMinSweepAngle, mMaxSweepAngle);
-        mSweepAppearingAnimator.setInterpolator(mSweepInterpolator);
-        mSweepAppearingAnimator.setDuration((long) (SWEEP_ANIMATOR_DURATION / SWEEP_SPEED));
-        mSweepAppearingAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        sweepAppearingAnimator = ValueAnimator.ofFloat(MIN_SWEEP_ANGLE, MAX_SWEEP_ANGLE);
+        sweepAppearingAnimator.setInterpolator(sweepInterpolator);
+        sweepAppearingAnimator.setDuration((long) (SWEEP_ANIMATOR_DURATION / SWEEP_SPEED));
+        sweepAppearingAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 float animatedFraction = getAnimatedFraction(animation);
                 float angle;
-                if (mFirstSweepAnimation) {
-                    angle = animatedFraction * mMaxSweepAngle;
+                if (firstSweepAnimation) {
+                    angle = animatedFraction * MAX_SWEEP_ANGLE;
                 } else {
-                    angle = mMinSweepAngle + animatedFraction * (mMaxSweepAngle - mMinSweepAngle);
+                    angle = MIN_SWEEP_ANGLE + animatedFraction * (MAX_SWEEP_ANGLE - MIN_SWEEP_ANGLE);
                 }
                 setCurrentSweepAngle(angle);
             }
         });
-        mSweepAppearingAnimator.addListener(new Animator.AnimatorListener() {
-            boolean cancelled = false;
+        sweepAppearingAnimator.addListener(getSweepAppearingListener());
+
+        sweepDisappearingAnimator = ValueAnimator.ofFloat(MAX_SWEEP_ANGLE, MIN_SWEEP_ANGLE);
+        sweepDisappearingAnimator.setInterpolator(sweepInterpolator);
+        sweepDisappearingAnimator.setDuration((long) (SWEEP_ANIMATOR_DURATION / SWEEP_SPEED));
+        sweepDisappearingAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float animatedFraction = getAnimatedFraction(animation);
+                setCurrentSweepAngle(
+                        MAX_SWEEP_ANGLE - animatedFraction * (MAX_SWEEP_ANGLE - MIN_SWEEP_ANGLE));
+            }
+        });
+        sweepDisappearingAnimator.addListener(getSweepDisappearingListener());
+        endAnimator = ValueAnimator.ofFloat(1f, 0f);
+        endAnimator.setInterpolator(END_INTERPOLATOR);
+        endAnimator.setDuration(END_ANIMATOR_DURATION);
+        endAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                setEndRatio(1f - getAnimatedFraction(animation));
+
+            }
+        });
+        endAnimator.addListener(getEndAnimatorListener());
+    }
+
+    @NonNull
+    private Animator.AnimatorListener getSweepAppearingListener() {
+        return new Animator.AnimatorListener() {
+            boolean cancelled;
 
             @Override
             public void onAnimationStart(Animator animation) {
@@ -159,9 +187,9 @@ public class CircleProgress implements Animatable {
             @Override
             public void onAnimationEnd(Animator animation) {
                 if (!cancelled) {
-                    mFirstSweepAnimation = false;
+                    firstSweepAnimation = false;
                     setDisappearing();
-                    mSweepDisappearingAnimator.start();
+                    sweepDisappearingAnimator.start();
                 }
             }
 
@@ -172,20 +200,14 @@ public class CircleProgress implements Animatable {
 
             @Override
             public void onAnimationRepeat(Animator animation) {
+                //No implementation
             }
-        });
+        };
+    }
 
-        mSweepDisappearingAnimator = ValueAnimator.ofFloat(mMaxSweepAngle, mMinSweepAngle);
-        mSweepDisappearingAnimator.setInterpolator(mSweepInterpolator);
-        mSweepDisappearingAnimator.setDuration((long) (SWEEP_ANIMATOR_DURATION / SWEEP_SPEED));
-        mSweepDisappearingAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                float animatedFraction = getAnimatedFraction(animation);
-                setCurrentSweepAngle(mMaxSweepAngle - animatedFraction * (mMaxSweepAngle - mMinSweepAngle));
-            }
-        });
-        mSweepDisappearingAnimator.addListener(new Animator.AnimatorListener() {
+    @NonNull
+    private Animator.AnimatorListener getSweepDisappearingListener() {
+        return new Animator.AnimatorListener() {
             boolean cancelled;
 
             @Override
@@ -197,7 +219,7 @@ public class CircleProgress implements Animatable {
             public void onAnimationEnd(Animator animation) {
                 if (!cancelled) {
                     setAppearing();
-                    mSweepAppearingAnimator.start();
+                    sweepAppearingAnimator.start();
                 }
             }
 
@@ -208,19 +230,14 @@ public class CircleProgress implements Animatable {
 
             @Override
             public void onAnimationRepeat(Animator animation) {
+                //No implementation
             }
-        });
-        mEndAnimator = ValueAnimator.ofFloat(1f, 0f);
-        mEndAnimator.setInterpolator(END_INTERPOLATOR);
-        mEndAnimator.setDuration(END_ANIMATOR_DURATION);
-        mEndAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                setEndRatio(1f - getAnimatedFraction(animation));
+        };
+    }
 
-            }
-        });
-        mEndAnimator.addListener(new Animator.AnimatorListener() {
+    @NonNull
+    private Animator.AnimatorListener getEndAnimatorListener() {
+        return new Animator.AnimatorListener() {
             private boolean cancelled;
 
             @Override
@@ -241,41 +258,40 @@ public class CircleProgress implements Animatable {
 
             @Override
             public void onAnimationRepeat(Animator animation) {
-
+                //No implementation
             }
-        });
+        };
     }
 
     private void stopAnimators() {
-        mRotationAnimator.cancel();
-        mSweepAppearingAnimator.cancel();
-        mSweepDisappearingAnimator.cancel();
-        mEndAnimator.cancel();
+        rotationAnimator.cancel();
+        sweepAppearingAnimator.cancel();
+        sweepDisappearingAnimator.cancel();
+        endAnimator.cancel();
     }
 
     @Override
     public boolean isRunning() {
-        return mRunning;
+        return running;
     }
 
     public void setCurrentRotationAngle(float currentRotationAngle) {
-        this.сurrentRotationAngle = currentRotationAngle;
+        this.currentRotationAngle = currentRotationAngle;
         invalidateSelf();
     }
 
     public void setCurrentSweepAngle(float currentSweepAngle) {
-        this.сurrentSweepAngle = currentSweepAngle;
+        this.currentSweepAngle = currentSweepAngle;
         invalidateSelf();
     }
 
     private void setEndRatio(float ratio) {
-        this.сurrentEndRatio = ratio;
+        this.currentEndRatio = ratio;
         invalidateSelf();
     }
 
-
     public void drawProgress(Canvas canvas, Point point, int progress, int radius) {
-        drawArc(canvas, point, radius, -90, UNIT_ANGLE * progress);
+        drawArc(canvas, point, radius, -QUART_OF_ROTATION_ANGLE, UNIT_ANGLE * progress);
     }
 
     public void setOnInvalidateListener(OnInvalidateListener listener) {
@@ -287,10 +303,10 @@ public class CircleProgress implements Animatable {
         if (isRunning()) {
             return;
         }
-        mRunning = true;
+        running = true;
         reinitValues();
-        mRotationAnimator.start();
-        mSweepAppearingAnimator.start();
+        rotationAnimator.start();
+        sweepAppearingAnimator.start();
         invalidateSelf();
     }
 
@@ -301,8 +317,8 @@ public class CircleProgress implements Animatable {
     }
 
     private void reinitValues() {
-        mFirstSweepAnimation = true;
-        сurrentEndRatio = 1f;
+        firstSweepAnimation = true;
+        currentEndRatio = 1f;
     }
 
     @Override
@@ -310,24 +326,25 @@ public class CircleProgress implements Animatable {
         if (!isRunning()) {
             return;
         }
-        mRunning = false;
+        running = false;
         stopAnimators();
         invalidateSelf();
     }
 
     private void setAppearing() {
         modeAppearing = true;
-        сurrentRotationAngleOffset += mMinSweepAngle;
+        currentRotationAngleOffset += MIN_SWEEP_ANGLE;
     }
 
     private void setDisappearing() {
         modeAppearing = false;
-        сurrentRotationAngleOffset = сurrentRotationAngleOffset + (360 - mMaxSweepAngle);
+        currentRotationAngleOffset =
+                currentRotationAngleOffset + (FULL_ROTATION_ANGLE - MAX_SWEEP_ANGLE);
     }
 
-
     float getAnimatedFraction(ValueAnimator animator) {
-        float fraction = animator.getDuration() > 0 ? ((float) animator.getCurrentPlayTime()) / animator.getDuration() : 1f;
+        float fraction = animator.getDuration() > 0 ?
+                ((float) animator.getCurrentPlayTime()) / animator.getDuration() : 1f;
 
         fraction %= 1f;
         fraction = Math.min(fraction, 1f);
