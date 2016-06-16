@@ -1,15 +1,32 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.1.2'
+    }
+}
+
+plugins {
+    id "com.jfrog.artifactory" version "4.0.0"
+}
+
+repositories {
+    jcenter()
+}
+
 apply plugin: 'com.android.library'
 
 project.ext.publishingGroupId = 'com.bandlab.circleprogress'
-project.ext.publishingVersion = '1.0.0'
-apply from: '../artifactory.gradle'
+project.ext.publishingVersion = '1.0.1'
+apply from: 'artifactory.gradle'
 
 android {
-    compileSdkVersion Integer.parseInt(rootProject.ANDROID_SDK_VERSION)
-    buildToolsVersion rootProject.ANDROID_BUILD_TOOLS_VERSION
+    compileSdkVersion 24
+    buildToolsVersion '24.0.0'
 
     defaultConfig {
-        minSdkVersion Integer.parseInt(rootProject.MIN_ANDROID_SDK_VERSION)
+        minSdkVersion 9
         versionName project.ext.publishingVersion
     }
 
@@ -20,6 +37,5 @@ android {
 }
 
 dependencies {
-    //noinspection GradleDependency
-    compile "com.android.support:support-annotations:$rootProject.ANDROID_SUPPORT_LIBRARY_VERSION"
+    compile "com.android.support:support-annotations:24.0.0"
 }
