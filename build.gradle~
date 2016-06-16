@@ -17,13 +17,13 @@ repositories {
 
 apply plugin: 'com.android.library'
 
-project.ext.publishingGroupId = 'com.bandlab.circleprogress'
-project.ext.publishingVersion = '1.0.1'
+project.ext.publishingGroupId = 'com.bandlab.countrychooser'
+project.ext.publishingVersion = '1.1.0'
 apply from: 'artifactory.gradle'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion '24.0.0'
+    compileSdkVersion 23
+    buildToolsVersion '24.0.0-rc3'
 
     defaultConfig {
         minSdkVersion 9
@@ -37,6 +37,5 @@ android {
 }
 
 dependencies {
-    //noinspection GradleDependency
-    compile "com.android.support:support-annotations:23.4.0"
+    compile "com.android.support:appcompat-v7:23.4.0"
 }
